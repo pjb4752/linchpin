@@ -8,26 +8,24 @@ module Linchpin
         @buffer = MessageBuffer.new
       end
 
-      def pending_messages
+      def messages
         [].tap do |messages|
-          receive_messages(messages)
+          receive(messages)
         end
       end
 
       def respond(message)
-        num_sent = 0
-        loop do
-          num_sent += send(message)
-          break if message.size == num_sent
-          message.slice!(num_sent, message.size - 1)
-        end
+        net_data = serializer.to_net(message)
+        net_data.prepend('%x' % net_data.size)
+
+        send(net_data)
       end
 
       private
 
       attr_reader :socket, :serializer, :buffer
 
-      def receive_messages(messages)
+      def receive(messages)
         loop do
           self.buffer << socket.recv_nonblock(1024)
 
@@ -37,6 +35,15 @@ module Linchpin
         end
       rescue IO::WaitReadable
         # no data to receive, no op
+      end
+
+      def send(data)
+        num_sent = 0
+        loop do
+          num_sent += socket.send(data)
+          break if data.size == num_sent
+          data.slice!(num_sent, data.size - 1)
+        end
       end
     end
   end
