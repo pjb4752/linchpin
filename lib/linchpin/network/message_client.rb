@@ -31,10 +31,11 @@ module Linchpin
       attr_reader :socket, :serializer
 
       def send_complete(message, size)
+        num_sent = 0
         loop do
-          sent = socket.send(message)
-          break if message.size == sent
-          message.slice!(sent, message.length)
+          num_sent += socket.send(message)
+          break if message.size == num_sent
+          message.slice!(num_sent, message.size - 1)
         end
       end
 

@@ -19,10 +19,17 @@ module Linchpin
 
       def message
         if message_complete?
-          buffer[HEADER_SIZE..buffer.size]
+          buffer[HEADER_SIZE...buffer.size]
         else
           raise IncompleteMessageError
         end
+      end
+
+      def reset
+        tmp = message.dup
+
+        buffer.clear
+        tmp
       end
 
       private
@@ -34,7 +41,7 @@ module Linchpin
       end
 
       def message_size_matches?
-        buffer[0..HEADER_SIZE].to_i(16) + HEADER_SIZE == buffer.size
+        buffer[0...HEADER_SIZE].to_i(16) + HEADER_SIZE == buffer.size
       end
     end
   end
