@@ -10,13 +10,13 @@ module Linchpin
         @serializer = serializer
       end
 
-      def call(data)
-        send(data)
+      def call(message)
+        send(message)
         receive
       end
 
-      def send(data)
-        net_data = serializer.to_net(data)
+      def send(message)
+        net_data = serializer.to_net(message)
         net_data.prepend('%x' % net_data.size)
 
         send_complete(net_data, net_data.size)
@@ -30,12 +30,12 @@ module Linchpin
 
       attr_reader :socket, :serializer
 
-      def send_complete(message, size)
+      def send_complete(data, size)
         num_sent = 0
         loop do
-          num_sent += socket.send(message)
-          break if message.size == num_sent
-          message.slice!(num_sent, message.size - 1)
+          num_sent += socket.send(data)
+          break if data.size == num_sent
+          data.slice!(num_sent, data.size - 1)
         end
       end
 
