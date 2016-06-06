@@ -1,13 +1,13 @@
-require 'linchpin/network/object_serializer'
 require 'linchpin/network/message_buffer'
 
 module Linchpin
   module Network
     class MessageClient
 
-      def initialize(socket, serializer = ObjectSerializer.new)
+      def initialize(socket, serializer)
         @socket = socket
         @serializer = serializer
+        @recv_buffer = MessageBuffer.new(serializer.header_size)
       end
 
       def call(message)
@@ -17,8 +17,6 @@ module Linchpin
 
       def send(message)
         net_data = serializer.to_net(message)
-        net_data.prepend('%x' % net_data.size)
-
         send_complete(net_data, net_data.size)
       end
 
@@ -28,23 +26,20 @@ module Linchpin
 
       private
 
-      attr_reader :socket, :serializer
+      attr_reader :socket, :serializer, :recv_buffer
 
       def send_complete(data, size)
-        num_sent = 0
         loop do
-          num_sent += socket.send(data)
-          break if data.size == num_sent
-          data.slice!(num_sent, data.size - 1)
+          num_sent = socket.send(data, 0)
+          data.slice!(0, num_sent)
+          break if data.empty?
         end
       end
 
       def receive_complete
-        buffer = MessageBuffer.new
-
         loop do
-          buffer << socket.recv(1024, 0)
-          break buffer.message if buffer.message_complete?
+          recv_buffer << socket.recv(1024, 0)
+          break recv_buffer.message if recv_buffer.message?
         end
       end
     end

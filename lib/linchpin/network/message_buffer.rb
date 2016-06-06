@@ -3,9 +3,8 @@ module Linchpin
     class MessageBuffer
       IncompleteMessageError = Class.new(StandardError)
 
-      HEADER_SIZE = 3
-
-      def initialize
+      def initialize(header_size)
+        @header_size = header_size
         @buffer = ''
       end
 
@@ -13,35 +12,30 @@ module Linchpin
         @buffer << data
       end
 
-      def message_complete?
-        message_header_complete? && message_size_matches?
+      def message?
+        message_header? && message_body?
       end
 
       def message
-        if message_complete?
-          buffer[HEADER_SIZE...buffer.size]
-        else
-          raise IncompleteMessageError
-        end
-      end
+        raise IncompleteMessageError unless message?
 
-      def reset
-        tmp = message.dup
-
-        buffer.clear
-        tmp
+        buffer.slice!(0, header_size + message_size)
       end
 
       private
 
-      attr_reader :buffer
+      attr_reader :buffer, :header_size
 
-      def message_header_complete?
-        buffer.size > HEADER_SIZE
+      def message_header?
+        buffer.size >= header_size
       end
 
-      def message_size_matches?
-        buffer[0...HEADER_SIZE].to_i(16) + HEADER_SIZE == buffer.size
+      def message_body?
+        header_size + message_size >= buffer.size
+      end
+
+      def message_size
+        buffer[0...header_size].to_i(16)
       end
     end
   end

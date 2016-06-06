@@ -1,16 +1,21 @@
+require 'linchpin/object_serializer'
 require 'linchpin/network/message_client'
 require 'socket'
 
 module Linchpin
   class Client
 
+    ConnectError = Class.new(StandardError)
+
     def self.unix_client(path = '/tmp/latch.sock')
       socket = UNIXSocket.new(path)
-      client = Network::MessageClient.new(socket)
+      serializer = ObjectSerializer.new
+      client = Network::MessageClient.new(socket, serializer)
 
       self.new(client)
     rescue Errno::ENOENT
-      $stderr.puts "couldn't connect to '#{path}'; is the server running?"
+      raise ConnectError,
+        "couldn't connect to '#{path}'; is the server running?"
     end
 
     def initialize(message_client)
