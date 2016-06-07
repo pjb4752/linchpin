@@ -1,6 +1,9 @@
+require 'linchpin/object_serializer.rb'
+
 module Linchpin
   module Message
     class Result
+      include Linchpin::ObjectSerializable
 
       attr_reader :values
 
