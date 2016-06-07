@@ -5,7 +5,7 @@ require 'socket'
 module Linchpin
   class Server
 
-    def self.unix_server(path = '/tmp/latch.sock', &block)
+    def self.unix_server(path = '/tmp/linchpin.sock', &block)
       Socket.unix_server_socket(path) do |server|
         serializer = ObjectSerializer.new
         message_server = Network::MessageServer.new(server, serializer)
@@ -23,6 +23,10 @@ module Linchpin
       loop { handle_clients(&block) }
     end
 
+    def messages
+      message_server.messages
+    end
+
     def respond(message)
       message_server.respond(message)
     end
@@ -31,18 +35,12 @@ module Linchpin
 
     attr_reader :message_server
 
-    def handle_clients(&block)
+    def handle_clients
       message_server.await_client
 
-      loop { server_loop(&block) }
+      loop { yield self }
     rescue Network::MessageServer::ClientDisconnect
       $stderr.puts 'client disconnected'
-    end
-
-    def server_loop
-      messages = message_server.messages
-
-      yield self, messages
     end
   end
 end

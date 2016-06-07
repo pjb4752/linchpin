@@ -14,8 +14,8 @@ def handle_message(message)
   end
 end
 
-Linchpin::Server.unix_server do |server, messages|
-  messages.each do |message|
+Linchpin::Server.unix_server do |server|
+  server.messages.each do |message|
     puts "handling message: #{message}"
     response = handle_message(message)
 

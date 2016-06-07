@@ -7,7 +7,7 @@ module Linchpin
 
     ConnectError = Class.new(StandardError)
 
-    def self.unix_client(path = '/tmp/latch.sock')
+    def self.unix_client(path = '/tmp/linchpin.sock')
       socket = UNIXSocket.new(path)
       serializer = ObjectSerializer.new
       client = Network::MessageClient.new(socket, serializer)
