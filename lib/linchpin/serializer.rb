@@ -1,11 +1,6 @@
 module Linchpin
-  module ObjectSerializable
-    def self.included(base)
-      ObjectSerializer.serializable_classes << base
-    end
-  end
-
-  class ObjectSerializer
+  class Serializer
+    SerializationError = Class.new(StandardError)
 
     HEADER_SIZE = 3
 
@@ -21,10 +16,10 @@ module Linchpin
     end
 
     def from_net(data)
-      serializable_check(object)
-
       data.slice!(0, header_size)
       Marshal.load(data)
+    rescue ArgumentError
+      raise_unserializable_error
     end
 
     def header_size
@@ -38,9 +33,11 @@ module Linchpin
     end
 
     def serializable_check(object)
-      if !serializable?(object)
-        raise SerializationError, 'cannot serialize unregistered classes'
-      end
+      raise_unserializable_error if !serializable?(object)
+    end
+
+    def raise_unserializable_error
+      raise SeriazationError, 'cannot serialize unregistered classes'
     end
 
     def serializable?(object)

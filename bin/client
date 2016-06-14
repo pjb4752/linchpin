@@ -2,15 +2,17 @@
 
 require 'linchpin'
 require 'linchpin/client'
-require 'linchpin/message/control'
+require 'linchpin/serializable'
 
 def create_client
   Linchpin::Client.unix_client
 end
 
 def create_control(data)
-  Linchpin::Message::Control.new(data)
+  "fake_control #{data}"
 end
+
+String.include(Linchpin::Serializable)
 
 begin
   client = create_client

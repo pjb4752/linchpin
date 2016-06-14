@@ -1,4 +1,4 @@
-require 'linchpin/object_serializer'
+require 'linchpin/serializer'
 require 'linchpin/network/message_client'
 require 'socket'
 
@@ -9,7 +9,7 @@ module Linchpin
 
     def self.unix_client(path = '/tmp/linchpin.sock')
       socket = UNIXSocket.new(path)
-      serializer = ObjectSerializer.new
+      serializer = Serializer.new
       client = Network::MessageClient.new(socket, serializer)
 
       self.new(client)

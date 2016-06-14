@@ -2,17 +2,18 @@
 
 require 'linchpin'
 require 'linchpin/server'
-require 'linchpin/message/control'
-require 'linchpin/message/result'
+require 'linchpin/serializable'
 
 def handle_message(message)
   case message
-  when Linchpin::Message::Control
-    Linchpin::Message::Result.new('control received')
+  when String
+    'control received'
   else
-    Linchpin::Message::Result.new('unknown message')
+    'unknown'
   end
 end
+
+String.include(Linchpin::Serializable)
 
 Linchpin::Server.unix_server do |server|
   server.messages.each do |message|

@@ -1,9 +1,9 @@
-require 'linchpin/object_serializer.rb'
+require 'linchpin/serializable.rb'
 
 module Linchpin
   module Message
     class Control
-      include Linchpin::ObjectSerializable
+      include Linchpin::Serializable
 
       attr_reader :code
 
